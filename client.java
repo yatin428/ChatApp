@@ -22,6 +22,7 @@ public class client extends JFrame implements ActionListener{
     static  Socket s;
     static DataInputStream din;
     static DataOutputStream dout;
+    Boolean typing;
     
     client(){
       p1=new JPanel();
@@ -87,6 +88,16 @@ public class client extends JFrame implements ActionListener{
         l4.setBounds(76,31,80,10);
         p1.add(l4);
         
+         Timer t=new Timer(1,new ActionListener(){
+            public void actionPerformed(ActionEvent ae){
+                if(!typing){
+                    l4.setText("Active Now");
+                }
+            }
+        });
+        
+        t.setInitialDelay(2000);
+        
         a1=new JTextArea();
         a1.setBounds(3,53,295,410);
         
@@ -101,6 +112,20 @@ public class client extends JFrame implements ActionListener{
         t1.setBounds(5,470,220,40);
         t1.setFont(new Font("SAN_SERIF",Font.PLAIN,16));
         add(t1);
+        
+         t1.addKeyListener(new KeyAdapter(){
+           public void keyPressed(KeyEvent ke){
+             l4.setText("typing...");
+             t.stop();
+             typing=true;
+           }
+           public void keyReleased(KeyEvent ke){
+               typing=false;
+               if(!t.isRunning()){
+                   t.start();
+               }
+           }
+       }); 
         
         b1=new JButton("Send");
         b1.setBounds(223,470,80,40);
