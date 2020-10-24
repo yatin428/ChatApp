@@ -6,24 +6,31 @@ import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 import java.io.*;
+import javax.swing.border.*;
+import java.util.Calendar;
+import java.text.SimpleDateFormat;
         
-public class server extends JFrame implements ActionListener{
+public class server implements ActionListener{
     
     JPanel p1;
     JTextField t1;
     JButton b1;
-   static JTextArea a1;
+   static JPanel a1;
+   static JFrame f1=new JFrame();
+   static Box vertical=Box.createVerticalBox();
+   
     static ServerSocket skt;
     static  Socket s;
     static DataInputStream din;
     static DataOutputStream dout;
     Boolean typing;
     server(){
+        f1.setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
       p1=new JPanel();
       p1.setLayout(null);
       p1.setBackground(new Color(7,54,84));
       p1.setBounds(0,0,490,50);
-      add(p1);
+      f1.add(p1);
       
       
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("chatting/application/icons/3.png"));
@@ -76,7 +83,7 @@ public class server extends JFrame implements ActionListener{
         l3.setBounds(76,10,130,20);
         p1.add(l3);
         
-         JLabel l4=new JLabel("Active Now");
+        JLabel l4=new JLabel("Active Now");
         l4.setFont(new Font("SAN_SERIF",Font.PLAIN,10));
         l4.setForeground(Color.WHITE);
         l4.setBounds(76,31,80,10);
@@ -92,19 +99,17 @@ public class server extends JFrame implements ActionListener{
         
         t.setInitialDelay(2000);
         
-        a1=new JTextArea();
+        a1=new JPanel();
         a1.setBounds(3,53,295,410);
         a1.setFont(new Font("SAN_SERIF",Font.PLAIN,16));
-        a1.setEditable(false);
-        a1.setLineWrap(true);
-        a1.setWrapStyleWord(true);
-        add(a1);
+       
+        f1.add(a1);
         
         
         t1=new JTextField();
         t1.setBounds(5,470,220,40);
         t1.setFont(new Font("SAN_SERIF",Font.PLAIN,16));
-        add(t1);
+       f1.add(t1);
         
        t1.addKeyListener(new KeyAdapter(){
            public void keyPressed(KeyEvent ke){
@@ -126,45 +131,78 @@ public class server extends JFrame implements ActionListener{
         b1.setForeground(Color.WHITE);
         b1.setFont(new Font("SAN_SERIF",Font.PLAIN,16));
         b1.addActionListener(this);
-        add(b1);
+        f1.add(b1);
         
-       // getContentPane().setBackground(Color.MAGENTA);
-        setLayout(null);
-      setSize(300,510);
+       f1.getContentPane().setBackground(Color.WHITE);
+        f1.setLayout(null);
+      f1.setSize(300,510);
       
-      setLocation(400,200);
-      setUndecorated(true);
-      setVisible(true);
+      f1.setLocation(400,200);
+      f1.setUndecorated(true);
+      f1.setVisible(true);
     }
     public void actionPerformed(ActionEvent ae){
-        try{
+     try{
         String out=t1.getText();
-        a1.setText(a1.getText()+"\n\t\t"+out);
-        t1.setText("");
-        dout.writeUTF(out);
         
-        }catch(Exception e){}
+       JPanel p2 = formatLabel(out);
+       a1.setLayout(new BorderLayout());
+       JPanel right=new JPanel(new BorderLayout());
+       right.add(p2,BorderLayout.LINE_END);
+       vertical.add(right);
+       
+       a1.add(vertical,BorderLayout.PAGE_START);
+       
+      // a1.add(p2);
+        dout.writeUTF(out);
+        t1.setText("");
+        
+        }catch(Exception e){
+        System.out.println(e);
+        }
+    }
+    
+    public static JPanel formatLabel(String out){
+        JPanel p3=new JPanel();
+        p3.setLayout(new BoxLayout(p3,BoxLayout.Y_AXIS));
+        
+        JLabel l1=new JLabel("<html><p style= \"width:150px\">"+out+"</p></html>");
+        l1.setFont(new Font("Tahoma",Font.PLAIN,16));
+        l1.setBackground(new Color(37,211,102));
+        l1.setOpaque(true);
+        l1.setBorder(new EmptyBorder(15,15,15,50));
+       Calendar cal=Calendar.getInstance(); 
+       SimpleDateFormat sdf=new SimpleDateFormat("HH:mm");
+       
+       JLabel l2=new JLabel();
+       l2.setText(sdf.format(cal.getTime()));
+        p3.add(l1);
+        p3.add(l2);
+        return p3;
     }
     public static void main(String[] args){
         
-        new server().setVisible(true);
+        new server().f1.setVisible(true);
        
         String msginput = "";
        try{
         skt = new ServerSocket(6001);
+        while(true){
         s = skt.accept();
         din = new DataInputStream(s.getInputStream());
         dout = new DataOutputStream(s.getOutputStream());
-        
-        msginput = din.readUTF();
-        a1.setText(a1.getText()+"\n"+msginput);
-        
-        skt.close();
-        s.close();
-        
-        
+        while(true){
+               msginput = din.readUTF();
+               JPanel p2 = formatLabel(msginput); 
+               JPanel left=new JPanel(new BorderLayout());
+               left.add(p2,BorderLayout.LINE_START);
+               vertical.add(left);
+               f1.validate();
+        }
+        } 
        }catch (Exception e){}
     }
+
 
    
 }
